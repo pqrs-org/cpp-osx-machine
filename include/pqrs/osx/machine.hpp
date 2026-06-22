@@ -13,34 +13,25 @@
 #include <IOKit/IOKitLib.h>
 #include <optional>
 #include <pqrs/cf/string.hpp>
+#include <pqrs/osx/iokit_object_ptr.hpp>
 
-namespace pqrs {
-namespace osx {
-namespace machine {
+namespace pqrs::osx::machine {
 
-inline std::optional<serial_number> find_serial_number(void) {
-  std::optional<serial_number> result;
-
-  if (auto platform_expert = IOServiceGetMatchingService(kIOMainPortDefault,
-                                                         IOServiceMatching("IOPlatformExpertDevice"))) {
-    auto sn = IORegistryEntryCreateCFProperty(platform_expert,
-                                              CFSTR(kIOPlatformSerialNumberKey),
-                                              kCFAllocatorDefault,
-                                              0);
+[[nodiscard]] inline std::optional<serial_number> find_serial_number() {
+  if (auto platform_expert = pqrs::osx::adopt_iokit_object_ptr(IOServiceGetMatchingService(kIOMainPortDefault,
+                                                                                           IOServiceMatching("IOPlatformExpertDevice")))) {
+    auto sn = pqrs::cf::adopt_cf_ptr(IORegistryEntryCreateCFProperty(*platform_expert,
+                                                                     CFSTR(kIOPlatformSerialNumberKey),
+                                                                     kCFAllocatorDefault,
+                                                                     0));
     if (sn) {
-      if (auto s = pqrs::cf::make_string(sn)) {
-        result = serial_number(*s);
+      if (auto s = pqrs::cf::make_string(*sn)) {
+        return serial_number(*s);
       }
-
-      CFRelease(sn);
     }
-
-    IOObjectRelease(platform_expert);
   }
 
-  return result;
+  return std::nullopt;
 }
 
-} // namespace machine
-} // namespace osx
-} // namespace pqrs
+} // namespace pqrs::osx::machine
