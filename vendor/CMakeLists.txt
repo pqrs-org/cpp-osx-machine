@@ -12,5 +12,6 @@ include("${CMAKE_CURRENT_LIST_DIR}/cpm-cmake-package-lock/cmake/common.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cpm-cmake-package-lock/cmake/dependency.cmake")
 
 copy_vendor_package(pqrs_cf_string)
+copy_vendor_package(pqrs_osx_iokit_object_ptr)
 copy_vendor_package(type_safe)
 copy_vendor_package(ut)
